@@ -32,6 +32,7 @@ executable todo-app
                       servant-auth-server >= 0.4.8.0,
                       servant-server >= 0.20,
                       text >= 2.1.1,
+                      time >= 1.12.2,
                       transformers >= 0.5.6.2,
                       warp >= 3.3.21
     hs-source-dirs:   app
