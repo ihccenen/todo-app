@@ -23,7 +23,7 @@ import Control.Exception (bracket, throwIO)
 import Control.Monad.IO.Class (MonadIO, liftIO)
 import Control.Monad.Logger (runStdoutLoggingT)
 import Control.Monad.Trans.Maybe (MaybeT (..), runMaybeT)
-import Data.Aeson (FromJSON, ToJSON)
+import Data.Aeson (FromJSON, ToJSON (toJSON), encode)
 import Data.ByteString qualified as BS
 import Data.ByteString.Lazy qualified as Lazy
 import Data.Password.Bcrypt
@@ -38,11 +38,12 @@ import Data.Pool (destroyAllResources)
 import Data.Text (Text)
 import Data.Text qualified as T
 import Data.Text.Encoding qualified as T
+import Data.Time (UTCTime, getCurrentTime)
 import Database.Esqueleto.Experimental
 import Database.Persist.Postgresql (ConnectionString, createPostgresqlPool)
 import Database.Persist.TH (mkMigrate, mkPersist, persistLowerCase, share, sqlSettings)
 import GHC.Generics (Generic)
-import Lucid
+import Lucid as L
 import Lucid.Base (makeAttribute)
 import Network.HTTP.Media ((//), (/:))
 import Network.Wai.Handler.Warp (run)
@@ -58,11 +59,50 @@ Account
   username Text UNIQUE
   password Text
   deriving Generic
+Todo
+  title Text
+  status Bool default=False
+  accountId AccountId
+  created UTCTime default=CURRENT_TIME
+  deriving Generic
 |]
+
+hyperscript_ :: Text -> Attribute
+hyperscript_ = makeAttribute "_"
+
+hxPost_ :: Text -> Attribute
+hxPost_ = makeAttribute "hx-post"
+
+hxGet_ :: Text -> Attribute
+hxGet_ = makeAttribute "hx-get"
+
+hxPut_ :: Text -> Attribute
+hxPut_ = makeAttribute "hx-put"
+
+hxVals_ :: Text -> Attribute
+hxVals_ = makeAttribute "hx-vals"
+
+hxDelete_ :: Text -> Attribute
+hxDelete_ = makeAttribute "hx-delete"
+
+hxSwap_ :: Text -> Attribute
+hxSwap_ = makeAttribute "hx-swap"
+
+hxTarget_ :: Text -> Attribute
+hxTarget_ = makeAttribute "hx-target"
+
+hxTrigger_ :: Text -> Attribute
+hxTrigger_ = makeAttribute "hx-trigger"
 
 instance FromForm Account
 
-newtype AuthenticatedAccount = AuthenticatedAccount {accId :: Key Account} deriving (Generic, Show)
+instance FromForm Todo
+
+instance ToJSON Todo
+
+instance FromJSON Todo
+
+newtype AuthenticatedAccount = AuthenticatedAccount {accId :: AccountId} deriving (Generic, Show)
 
 instance ToJSON AuthenticatedAccount
 
@@ -71,6 +111,49 @@ instance ToJWT AuthenticatedAccount
 instance FromJSON AuthenticatedAccount
 
 instance FromJWT AuthenticatedAccount
+
+instance ToHtml Todo where
+  toHtml = p_ . toHtml . todoTitle
+  toHtmlRaw = toHtml
+
+jsonStringify :: (ToJSON a) => a -> Text
+jsonStringify = T.decodeUtf8 . Lazy.toStrict . encode . toJSON
+
+instance ToHtml (Entity Todo) where
+  toHtml entityTodo = li_ [hxTarget_ "this", hxSwap_ "outerHTML"] $ do
+    L.with (toHtml todo') [class_ "line-through" | status]
+
+    input_ $
+      [ type_ "checkbox"
+      , id_ "status"
+      , name_ "status"
+      , hxTrigger_ "click"
+      , hxPut_ $ "/todo/" <> todoId'
+      , hxVals_ updatedTodo
+      ]
+        <> [checked_ | status]
+
+    button_
+      [hxDelete_ $ "/todo/" <> todoId', hyperscript_ "on htmx:afterOnLoad remove the closest <li/>"]
+      "X"
+    where
+      todo'@(Todo _ status _ _) = entityVal entityTodo
+      todoId' = T.pack $ show $ fromSqlKey $ entityKey entityTodo
+      updatedTodo = jsonStringify $ todo' {todoStatus = not status}
+
+  toHtmlRaw = toHtml
+
+instance ToHtml [Entity Todo] where
+  toHtml = ul_ [id_ "todo-list"] . foldMap toHtml
+  toHtmlRaw = toHtml
+
+newtype TodoForm = TodoForm {title :: Text} deriving (Generic)
+
+instance FromForm TodoForm
+
+instance ToJSON TodoForm
+
+instance FromJSON TodoForm
 
 data HTML
 
@@ -89,7 +172,16 @@ type AcceptHeaders returnContent =
      ]
     returnContent
 
-type Protected = Auth '[Cookie] AuthenticatedAccount :> Get '[HTML] RawHtml
+type Protected =
+  Auth '[Cookie] AuthenticatedAccount
+    :> ( Get '[HTML] RawHtml
+          :<|> "todo"
+            :> ( Get '[HTML] RawHtml
+                  :<|> ReqBody '[FormUrlEncoded] TodoForm :> Verb 'POST 201 '[HTML] RawHtml
+                  :<|> Capture "todoId" TodoId
+                    :> ((ReqBody '[FormUrlEncoded] Todo :> Verb 'PUT 201 '[HTML] RawHtml) :<|> Delete '[JSON] NoContent)
+               )
+       )
 
 type Unprotected =
   "signup"
@@ -103,14 +195,8 @@ type Unprotected =
 
 type API = Protected :<|> Unprotected
 
-hyperscript_ :: Text -> Attribute
-hyperscript_ = makeAttribute "_"
-
-hxPost_ :: Text -> Attribute
-hxPost_ = makeAttribute "hx-post"
-
 baseRender :: (Monad m) => Text -> HtmlT m a -> HtmlT m a
-baseRender title innerHtml = do
+baseRender title' innerHtml = do
   doctype_
 
   html_ [lang_ "en"] ""
@@ -126,7 +212,7 @@ baseRender title innerHtml = do
 
     script_ [src_ "https://unpkg.com/hyperscript.org@0.9.12"] ("" :: String)
 
-    title_ (toHtml title)
+    title_ (toHtml title')
 
   body_ innerHtml
 
@@ -138,7 +224,7 @@ loginSignupPage = renderRawHtml $ baseRender "Homepage" $ div_ $ do
   a_ [href_ "/login"] "Login"
   a_ [href_ "/signup"] "Signup"
 
-input :: Text -> Text -> Text -> Html ()
+input :: (Monad m) => Text -> Text -> Text -> HtmlT m ()
 input lbl typ name = div_ $ do
   label_ [for_ name] $ toHtml lbl
   input_ [type_ typ, name_ name, id_ name, required_ "true"]
@@ -197,12 +283,79 @@ loginPage = renderRawHtml
 
     button_ [type_ "submit"] "Submit"
 
-api :: Proxy API
-api = Proxy
+getAllTodosDB :: (MonadIO m) => AccountId -> SqlPersistT m [Entity Todo]
+getAllTodosDB accId' = select $ do
+  todos <- from $ table @Todo
+  where_ (todos ^. TodoAccountId ==. val accId')
+  orderBy [desc (todos ^. TodoCreated)]
+  return todos
+
+deleteTodoDB :: (MonadIO m) => TodoId -> AccountId -> SqlPersistT m ()
+deleteTodoDB todoId accId' = delete $ do
+  todo' <- from $ table @Todo
+  where_
+    ( todo'
+        ^. TodoId
+        ==. val todoId
+        &&. todo'
+        ^. TodoAccountId
+        ==. val accId'
+    )
+
+updateTodoDB :: (MonadIO m) => AccountId -> TodoId -> Todo -> SqlPersistT m ()
+updateTodoDB accId' todoId (Todo title' status _ _) = update $ \t -> do
+  set t [TodoTitle =. val title', TodoStatus =. val status]
+  where_ (t ^. TodoId ==. val todoId &&. t ^. TodoAccountId ==. val accId')
 
 protected :: ConnectionPool -> Server Protected
-protected _ (Authenticated _) = return $ RawHtml $ renderBS $ h1_ "Authenticated"
-protected _ _ = return loginSignupPage
+protected connPool (Authenticated (AuthenticatedAccount accId')) =
+  homepage
+    :<|> getAllTodos
+    :<|> addTodo
+    :<|> updateDeleteTodo
+  where
+    homepage :: Handler RawHtml
+    homepage = do
+      return $ renderRawHtml $ baseRender "Homepage" $ do
+        form_
+          [ hxPost_ "/todo"
+          , hxTarget_ "#todo-list"
+          , hxSwap_ "afterbegin"
+          , hyperscript_ "on htmx:afterOnLoad set #title.value to ''"
+          ]
+          $ do
+            input "Title" "text" "title"
+
+            button_ [type_ "submit"] "Submit"
+
+        ul_ [hxGet_ "/todo", hxSwap_ "outerHTML", hxTrigger_ "revealed"] ""
+
+    getAllTodos :: Handler RawHtml
+    getAllTodos = do
+      todos <- liftIO $ liftSqlPersistMPool (getAllTodosDB accId') connPool
+      return $ renderRawHtml $ toHtml todos
+
+    addTodo :: TodoForm -> Handler RawHtml
+    addTodo (TodoForm title') = do
+      now <- liftIO getCurrentTime
+      let todo' = Todo title' False accId' now
+      todoId <- liftIO $ liftSqlPersistMPool (insert todo') connPool
+      let entityTodo = Entity todoId todo'
+      return $ renderRawHtml $ toHtml entityTodo
+
+    updateDeleteTodo :: TodoId -> (Todo -> Handler RawHtml) :<|> Handler NoContent
+    updateDeleteTodo todoId = updateTodo todoId :<|> deleteTodo todoId
+
+    updateTodo :: TodoId -> Todo -> Handler RawHtml
+    updateTodo todoId todo' = do
+      liftIO $ liftSqlPersistMPool (updateTodoDB accId' todoId todo') connPool
+      return $ renderRawHtml $ toHtml (Entity todoId todo')
+
+    deleteTodo :: TodoId -> Handler NoContent
+    deleteTodo todoId = do
+      liftIO $ liftSqlPersistMPool (deleteTodoDB todoId accId') connPool
+      return NoContent
+protected _ _ = return loginSignupPage :<|> throwAll err401
 
 getAuthenticatedCookies
   :: CookieSettings
@@ -267,6 +420,7 @@ server cs jwts connPool = protected connPool :<|> unprotected cs jwts connPool
 app :: JWTSettings -> ConnectionPool -> Application
 app jwts connPool = serveWithContext api cfg (server cookieSettings jwts connPool)
   where
+    api = Proxy :: Proxy API
     cfg = cookieSettings :. jwts :. EmptyContext
     cookieSettings =
       defaultCookieSettings
