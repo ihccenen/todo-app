@@ -113,29 +113,37 @@ instance FromJSON AuthenticatedAccount
 instance FromJWT AuthenticatedAccount
 
 instance ToHtml Todo where
-  toHtml = p_ . toHtml . todoTitle
+  toHtml = p_ [class_ "flex-1"] . toHtml . todoTitle
   toHtmlRaw = toHtml
 
 jsonStringify :: (ToJSON a) => a -> Text
 jsonStringify = T.decodeUtf8 . Lazy.toStrict . encode . toJSON
 
 instance ToHtml (Entity Todo) where
-  toHtml entityTodo = li_ [hxTarget_ "this", hxSwap_ "outerHTML"] $ do
-    L.with (toHtml todo') [class_ "line-through" | status]
+  toHtml entityTodo = li_
+    [ class_ "flex items-center gap-3 px-3 py-2 border rounded break-all"
+    , hxTarget_ "this"
+    , hxSwap_ "outerHTML"
+    ]
+    $ do
+      L.with (toHtml todo') [class_ " line-through" | status]
 
-    input_ $
-      [ type_ "checkbox"
-      , id_ "status"
-      , name_ "status"
-      , hxTrigger_ "click"
-      , hxPut_ $ "/todo/" <> todoId'
-      , hxVals_ updatedTodo
-      ]
-        <> [checked_ | status]
+      input_ $
+        [ type_ "checkbox"
+        , id_ "status"
+        , name_ "status"
+        , hxTrigger_ "click"
+        , hxPut_ $ "/todo/" <> todoId'
+        , hxVals_ updatedTodo
+        ]
+          <> [checked_ | status]
 
-    button_
-      [hxDelete_ $ "/todo/" <> todoId', hyperscript_ "on htmx:afterOnLoad remove the closest <li/>"]
-      "X"
+      button_
+        [ class_ "px-2 py-1 rounded bg-red-400 hover:bg-red-500 focus:bg-red-500"
+        , hxDelete_ $ "/todo/" <> todoId'
+        , hyperscript_ "on htmx:afterOnLoad remove the closest <li/>"
+        ]
+        "X"
     where
       todo'@(Todo _ status _ _) = entityVal entityTodo
       todoId' = T.pack $ show $ fromSqlKey $ entityKey entityTodo
@@ -144,7 +152,7 @@ instance ToHtml (Entity Todo) where
   toHtmlRaw = toHtml
 
 instance ToHtml [Entity Todo] where
-  toHtml = ul_ [id_ "todo-list"] . foldMap toHtml
+  toHtml = foldMap toHtml
   toHtmlRaw = toHtml
 
 newtype TodoForm = TodoForm {title :: Text} deriving (Generic)
@@ -214,27 +222,31 @@ baseRender title' innerHtml = do
 
     title_ (toHtml title')
 
-  body_ innerHtml
+  body_ [class_ "min-h-screen min-w-screen text-xl"] innerHtml
 
 renderRawHtml :: Html a -> RawHtml
 renderRawHtml = RawHtml . renderBS
 
 loginSignupPage :: RawHtml
-loginSignupPage = renderRawHtml $ baseRender "Homepage" $ div_ $ do
-  a_ [href_ "/login"] "Login"
-  a_ [href_ "/signup"] "Signup"
+loginSignupPage = renderRawHtml $
+  baseRender "Homepage" $
+    div_ [class_ "flex justify-center items-center gap-3 min-h-screen text-4xl text-teal-500"] $ do
+      a_ [class_', href_ "/login"] "Login"
+      a_ [class_', href_ "/signup"] "Signup"
+  where
+    class_' = class_ "hover:text-indigo-700 hover:underline focus:text-indigo-700 focus:underline"
 
 input :: (Monad m) => Text -> Text -> Text -> HtmlT m ()
-input lbl typ name = div_ $ do
+input lbl typ name = div_ [class_ "flex flex-col gap-2"] $ do
   label_ [for_ name] $ toHtml lbl
-  input_ [type_ typ, name_ name, id_ name, required_ "true"]
+  input_ [class_ "px-2 py-1 bg-gray-200 rounded", type_ typ, name_ name, id_ name, required_ "true"]
 
 authError :: Attribute
 authError =
   hyperscript_
     "on htmx:afterOnLoad\
     \  if event.detail.successful\
-    \    set #error.innerHTML to '\160'\
+    \    set #error.innerHTML to ''\
     \    go to url '/'\
     \  else if event.detail.xhr.status is 401\
     \    set #error.innerHTML to event.detail.xhr.responseText\
@@ -242,46 +254,52 @@ authError =
     \    set #error.innerHTML to 'Server error'"
 
 signupPage :: RawHtml
-signupPage = renderRawHtml $
-  baseRender "Signup" $
-    form_ [hxPost_ "/signup", authError] $
-      do
-        div_ $ do
-          span_ [id_ "error"] "\160"
-
-        input "Username:" "text" "accountUsername"
-
-        input "Password:" "password" "accountPassword"
-
-        input "Confirm Password:" "password" "confirm-password"
-
-        button_
-          [ type_ "submit"
-          , hyperscript_
-              "on keyup from closest <form/>\
-              \   if #accountPassword.value is not #confirm-password.value\
-              \     put 'Passwords does not match' into me\
-              \     add @disabled\
-              \   else\
-              \     put 'Submit' into me\
-              \     remove @disabled"
-          ]
-          "Submit"
-
-loginPage :: RawHtml
-loginPage = renderRawHtml
-  $ baseRender "Login"
+signupPage = renderRawHtml
+  $ baseRender "Signup"
+  $ div_ [class_ "flex justify-center items-center min-h-screen"]
   $ form_
-    [hxPost_ "/login", authError]
+    [class_ "flex flex-col gap-4 p-4 rounded border border-black", hxPost_ "/signup", authError]
   $ do
-    div_ $ do
-      span_ [id_ "error"] "\160"
+    div_ [class_ "text-red-600"] $ do
+      span_ [id_ "error"] ""
 
     input "Username:" "text" "accountUsername"
 
     input "Password:" "password" "accountPassword"
 
-    button_ [type_ "submit"] "Submit"
+    input "Confirm Password:" "password" "confirm-password"
+
+    button_
+      [ class_ "p-3 rounded bg-emerald-300"
+      , type_ "submit"
+      , hyperscript_
+          "on keyup from closest <form/>\
+          \   if #accountPassword.value is not #confirm-password.value\
+          \     put 'Passwords does not match' into me\
+          \     add .bg-red-500\
+          \     add @disabled\
+          \   else\
+          \     put 'Submit' into me\
+          \     remove .bg-red-500\
+          \     remove @disabled"
+      ]
+      "Submit"
+
+loginPage :: RawHtml
+loginPage = renderRawHtml
+  $ baseRender "Login"
+  $ div_ [class_ "flex justify-center items-center min-h-screen"]
+  $ form_
+    [class_ "flex flex-col gap-4 p-4 rounded border border-black", hxPost_ "/login", authError]
+  $ do
+    div_ [class_ "text-red-600"] $ do
+      span_ [id_ "error"] ""
+
+    input "Username:" "text" "accountUsername"
+
+    input "Password:" "password" "accountPassword"
+
+    button_ [class_ "p-3 rounded bg-emerald-300", type_ "submit"] "Login"
 
 getAllTodosDB :: (MonadIO m) => AccountId -> SqlPersistT m [Entity Todo]
 getAllTodosDB accId' = select $ do
@@ -316,19 +334,28 @@ protected connPool (Authenticated (AuthenticatedAccount accId')) =
   where
     homepage :: Handler RawHtml
     homepage = do
-      return $ renderRawHtml $ baseRender "Homepage" $ do
+      return $ renderRawHtml $ baseRender "Homepage" $ div_ [class_ "flex flex-col gap-10 mt-10"] $ do
         form_
-          [ hxPost_ "/todo"
+          [ class_ "flex justify-center gap-3"
+          , hxPost_ "/todo"
           , hxTarget_ "#todo-list"
           , hxSwap_ "afterbegin"
           , hyperscript_ "on htmx:afterOnLoad set #title.value to ''"
           ]
           $ do
-            input "Title" "text" "title"
+            input_
+              [class_ "px-2 py-1 bg-gray-200 rounded", type_ "text", name_ "title", id_ "title", required_ "true"]
 
-            button_ [type_ "submit"] "Submit"
+            button_ [class_ "px-2 py-1 rounded bg-emerald-300", type_ "submit"] "Add Todo"
 
-        ul_ [hxGet_ "/todo", hxSwap_ "outerHTML", hxTrigger_ "revealed"] ""
+        ul_
+          [ id_ "todo-list"
+          , class_ "flex flex-col gap-2 m-auto max-w-screen-sm min-w-96"
+          , hxGet_ "/todo"
+          , hxSwap_ "innerHTML"
+          , hxTrigger_ "revealed"
+          ]
+          ""
 
     getAllTodos :: Handler RawHtml
     getAllTodos = do
