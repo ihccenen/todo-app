@@ -121,7 +121,9 @@ jsonStringify = T.decodeUtf8 . Lazy.toStrict . encode . toJSON
 
 instance ToHtml (Entity Todo) where
   toHtml entityTodo = li_
-    [ class_ "flex items-center gap-3 px-3 py-2 border rounded break-all"
+    [ class_ $
+        "flex items-center gap-3 px-3 py-2 border rounded break-all "
+          <> (if status then "completed" else "incompleted")
     , hxTarget_ "this"
     , hxSwap_ "outerHTML"
     ]
@@ -135,6 +137,7 @@ instance ToHtml (Entity Todo) where
         , hxTrigger_ "click"
         , hxPut_ $ "/todo/" <> todoId'
         , hxVals_ updatedTodo
+        , hyperscript_ "on filter(status) remove closest <li/>"
         ]
           <> [checked_ | status]
 
@@ -347,6 +350,26 @@ protected connPool (Authenticated (AuthenticatedAccount accId')) =
               [class_ "px-2 py-1 bg-gray-200 rounded", type_ "text", name_ "title", id_ "title", required_ "true"]
 
             button_ [class_ "px-2 py-1 rounded bg-emerald-300", type_ "submit"] "Add Todo"
+
+        select_
+          [ class_ "px-4 py-2 mx-auto rounded-lg"
+          , name_ "filter"
+          , hyperscript_
+              "on change\
+              \  set val to (<option:checked/>).value\
+              \  if val is 'all'\
+              \    show <li/>\
+              \  else if val is 'completed'\
+              \    show <li.completed/>\
+              \    hide .incompleted\
+              \  else\
+              \    show .incompleted\
+              \    hide .completed"
+          ]
+          $ do
+            option_ [value_ "all"] "All"
+            option_ [value_ "completed"] "Completed"
+            option_ [value_ "incompleted"] "Incompleted"
 
         ul_
           [ id_ "todo-list"
