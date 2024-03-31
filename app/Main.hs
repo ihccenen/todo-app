@@ -247,14 +247,18 @@ input lbl typ name = div_ [class_ "flex flex-col gap-2"] $ do
 authError :: Attribute
 authError =
   hyperscript_
-    "on htmx:afterOnLoad\
-    \  if event.detail.successful\
-    \    set #error.innerHTML to ''\
-    \    go to url '/'\
-    \  else if event.detail.xhr.status is 401\
-    \    set #error.innerHTML to event.detail.xhr.responseText\
-    \  else\
-    \    set #error.innerHTML to 'Server error'"
+    " on htmx:beforeSend\
+    \   add .bg-violet-400 to <button/> in me\
+    \   add .cursor-wait to <button/> in me\
+    \ on htmx:afterOnLoad\
+    \   if event.detail.successful\
+    \     go to url '/'\
+    \   else if event.detail.xhr.status is 401\
+    \     remove .cursor-wait from <button/> in me\
+    \     remove .bg-violet-400 from <button/> in me\
+    \     set #error.innerHTML to event.detail.xhr.responseText\
+    \   else\
+    \     set #error.innerHTML to 'Server error'"
 
 signupPage :: RawHtml
 signupPage = renderRawHtml
@@ -273,7 +277,7 @@ signupPage = renderRawHtml
     input "Confirm Password:" "password" "confirm-password"
 
     button_
-      [ class_ "p-3 rounded bg-emerald-300"
+      [ class_ "p-3 rounded bg-emerald-300 disabled:bg-red-500"
       , type_ "submit"
       , hyperscript_
           "on keyup from closest <form/>\
@@ -303,6 +307,7 @@ loginPage = renderRawHtml
     input "Password:" "password" "accountPassword"
 
     button_ [class_ "p-3 rounded bg-emerald-300", type_ "submit"] "Login"
+
 
 getAllTodosDB :: (MonadIO m) => AccountId -> SqlPersistT m [Entity Todo]
 getAllTodosDB accId' = select $ do
@@ -343,7 +348,13 @@ protected connPool (Authenticated (AuthenticatedAccount accId')) =
           , hxPost_ "/todo"
           , hxTarget_ "#todo-list"
           , hxSwap_ "afterbegin"
-          , hyperscript_ "on htmx:afterOnLoad set #title.value to ''"
+          , hyperscript_ " on htmx:beforeSend\
+                         \   add .bg-violet-400 to <button/> in me\
+                         \   add .cursor-wait to <button/> in me\
+                         \ on htmx:afterOnLoad\
+                         \  set #title.value to ''\
+                         \  remove .bg-violet-400 from <button/> in me\
+                         \   remove .cursor-wait from <button/> in me"
           ]
           $ do
             input_
@@ -378,7 +389,7 @@ protected connPool (Authenticated (AuthenticatedAccount accId')) =
           , hxSwap_ "innerHTML"
           , hxTrigger_ "revealed"
           ]
-          ""
+          (p_ "Loading todos...")
 
     getAllTodos :: Handler RawHtml
     getAllTodos = do
