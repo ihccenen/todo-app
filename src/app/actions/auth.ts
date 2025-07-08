@@ -62,6 +62,16 @@ export async function signup(_: UserFormState, formData: FormData): Promise<User
         },
       };
     }
+
+    return {
+      errors: {
+        server: "Unknow error",
+      },
+      formFields: {
+        username,
+        password,
+      },
+    };
   }
 
   redirect("/");
