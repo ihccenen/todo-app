@@ -1,14 +1,14 @@
 "use server";
 
 import { createSession, deleteSession } from "../lib/session";
-import { UserSchema, UserFormState } from '@/app/lib/definitions'
+import { User, UserFormState } from '@/app/lib/definitions'
 import prisma from "../lib/prisma";
 import { Prisma } from '@prisma/client';
 import bcrypt from "bcryptjs";
 import { redirect } from "next/navigation";
 
 export async function signup(_: UserFormState, formData: FormData): Promise<UserFormState> {
-  const validatedFields = UserSchema.safeParse({
+  const validatedFields = User.safeParse({
     username: formData.get("username")?.toString(),
     password: formData.get("password")?.toString(),
   });
@@ -27,7 +27,6 @@ export async function signup(_: UserFormState, formData: FormData): Promise<User
 
   try {
     const hashedPassword = await bcrypt.hash(password, 10);
-    console.log(hashedPassword);
 
     const result = await prisma.user.create({
       data: {
@@ -69,7 +68,7 @@ export async function signup(_: UserFormState, formData: FormData): Promise<User
 }
 
 export async function login(_:UserFormState, formData: FormData): Promise<UserFormState> {
-  const validatedFields = UserSchema.safeParse({
+  const validatedFields = User.safeParse({
     username: formData.get("username")?.toString(),
     password: formData.get("password")?.toString(),
   });

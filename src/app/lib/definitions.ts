@@ -1,6 +1,7 @@
 import { z } from 'zod'
 
-export const UserSchema = z.object({
+const UserSchema = z.object({
+  id: z.number(),
   username: z
     .string()
     .min(2, { message: "Username must be at least 2 characters long" })
@@ -12,6 +13,8 @@ export const UserSchema = z.object({
     .regex(/[0-9]/, { message: "Contain at least one number" })
     .trim(),
 })
+
+export const User = UserSchema.omit({ id: true });
 
 export type UserFormState = {
   errors?: {
