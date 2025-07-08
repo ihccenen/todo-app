@@ -14,7 +14,7 @@ export default function LoginForm() {
         name="username"
         id="username"
         pattern="*"
-        defaultValue={state?.formFields?.username || ""}
+        defaultValue={state?.formFields?.username}
         required={true}
       />
       <Input
@@ -23,7 +23,7 @@ export default function LoginForm() {
         name="password"
         id="password"
         pattern="*"
-        defaultValue={state?.formFields?.password || ""}
+        defaultValue={state?.formFields?.password}
         required={true}
       />
       <button

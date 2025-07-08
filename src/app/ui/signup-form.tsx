@@ -14,7 +14,7 @@ export default function SignupForm() {
         name="username"
         id="username"
         pattern=".{2,}"
-        defaultValue={state?.formFields?.username || ""}
+        defaultValue={state?.formFields?.username}
         required={true}
       >
         <span className="text-sm text-red-500 hidden peer-[:invalid&:not(:placeholder-shown)]:block">
@@ -27,7 +27,7 @@ export default function SignupForm() {
         name="password"
         id="password"
         pattern="(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{4,}$"
-        defaultValue={state?.formFields?.password || ""}
+        defaultValue={state?.formFields?.password}
         required={true}
       >
         <div className={`text-sm text-red-500 ${!state?.errors?.password && "hidden peer-[:invalid&:not(:placeholder-shown)]:block"}`}>
