@@ -147,6 +147,6 @@ export async function login(_:UserFormState, formData: FormData): Promise<UserFo
   redirect("/");
 }
 
-export async function logout(_: FormData): Promise<void> {
+export async function logout(): Promise<void> {
   await deleteSession();
 }
