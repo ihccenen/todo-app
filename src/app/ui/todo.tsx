@@ -13,11 +13,11 @@ export default function Todo({ todo }: {todo: TodoType }) {
       >
         {todo.status === "completed" ? "✔" : "O"}
       </button>
-      <div>
+      <div className="relative z-1">
         <p
           className={`break-all inline bg-gradient-to-l from-black to-black bg-no-repeat bg-[length:0px_0.1em] transition-all duration-1000 ease-in ${todo.status === "completed" && "bg-[length:100%_0.1em]"} bg-[0px_center]`}
         >
-          {todo.title}
+          <span className="relative -z-1">{todo.title}</span>
         </p>
       </div>
       <button
