@@ -12,7 +12,7 @@ export default async function Home() {
       { session
         ? <div className="grid gap-5">
             <Navbar username={session.username} />
-            <div className="container grid gap-10 mx-auto p-2">
+            <div className="container grid gap-2 mx-auto p-2">
               <Todos />
               <TodoForm />
             </div>
