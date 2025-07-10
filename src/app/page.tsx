@@ -1,7 +1,8 @@
-import Link from "next/link";
-
-import Navbar from "./ui/navbar";
 import { verifySession } from "./lib/session";
+import Navbar from "./ui/navbar";
+import TodoForm from "./ui/todo-form";
+import Todos from "./ui/todos";
+import Link from "next/link";
 
 export default async function Home() {
   const session = await verifySession();
@@ -9,8 +10,12 @@ export default async function Home() {
   return (
     <main className="h-screen text-lg">
       { session
-        ? <div>
+        ? <div className="grid gap-5">
             <Navbar username={session.username} />
+            <div className="container grid gap-10 mx-auto p-2">
+              <Todos />
+              <TodoForm />
+            </div>
           </div>
         : <div className="flex justify-center items-center gap-5 p-5">
             <Link href="/login" className="text-2xl text-blue-600 hover:underline">Login</Link>

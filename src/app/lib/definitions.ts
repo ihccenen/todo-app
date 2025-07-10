@@ -39,3 +39,28 @@ export type UserSession = {
   username: string;
   userId: number;
 };
+
+const TodoSchema = z.object({
+  id: z.number(),
+  title: z
+    .string()
+    .min(1, { message: "Empty title" })
+    .trim(),
+  status: z.enum(["completed", "pending"]),
+  createdAt: z.date(),
+});
+
+export const Todo = TodoSchema.omit({ id: true, status: true, createdAt: true });
+
+export type Todo = z.infer<typeof TodoSchema>;
+
+export type TodoFormState = {
+  errors?: {
+    session?: string,
+    title?: string[];
+    server?: string,
+  };
+  formFields?: {
+    title?: string;
+  };
+} | undefined;
