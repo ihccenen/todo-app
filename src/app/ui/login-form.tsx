@@ -1,6 +1,7 @@
 "use client";
 
 import Input from "./input";
+import Button from "./button";
 import { login } from "../actions/auth";
 import { useActionState } from "react";
 
@@ -26,13 +27,14 @@ export default function LoginForm() {
         defaultValue={state?.formFields?.password}
         required={true}
       />
-      <button
+      <Button
         type="submit"
         disabled={pending}
-        className={`text-xl mx-auto px-10 py-2 rounded-xl bg-green-500 hover:bg-green-600 focus:bg-green-600 hover:cursor-pointer`}
+        className={`text-xl mx-auto px-10 py-2 rounded-xl ${pending ? "bg-lime-700" : "bg-lime-600 hover:bg-lime-700 focus:bg-lime-700"}`}
+        showSpinner={pending}
       >
-        Signup
-      </button>
+        { pending ? "Logging in..." : "Log in" }
+      </Button>
       { state?.errors?.server && <p className="text-center text-red-500">{state.errors.server}</p> }
     </form>
   );

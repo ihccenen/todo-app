@@ -1,6 +1,7 @@
 "use client";
 
 import Input from "./input";
+import Button from "./button";
 import { createTodo } from "../actions/todo";
 import { useActionState } from "react";
 
@@ -19,13 +20,14 @@ export default function TodoForm() {
       >
         { state?.errors?.title && <span className="text-md text-red-500">{state?.errors?.title}</span> }
       </Input>
-      <button
+      <Button
         type="submit"
         disabled={pending}
-        className="px-4 py-2 mx-auto rounded-xl bg-lime-600 hover:bg-lime-700 focus:bg-lime-700 hover:cursor-pointer"
+        showSpinner={pending}
+        className={`px-4 py-2 mx-auto rounded-xl ${pending ? "bg-lime-700" : "bg-lime-600 hover:bg-lime-700 focus:bg-lime-700"}`}
       >
-        Add Todo
-      </button>
+        { pending ? "Adding Todo..." : "Add Todo" }
+      </Button>
       { (state?.errors?.session || state?.errors?.server) && <span className="text-center text-md text-red-500">{state.errors.session || state.errors.server}</span> }
     </form>
   );
