@@ -10,7 +10,7 @@ export default function Todo({ todo }: {todo: TodoType }) {
   const [deleting, setDeleting] = useState(false);
 
   return (
-    <div className="text-2xl max-sm:text-xl flex items-center gap-2 p-3 rounded-md bg-cyan-600">
+    <div className={`text-2xl max-sm:text-xl flex items-center gap-2 p-3 rounded-md ${todo.status === "pending" ? "bg-indigo-900" : "bg-indigo-950"}`}>
       <Button
         type="button"
         disabled={updatingStatus}
@@ -39,7 +39,7 @@ export default function Todo({ todo }: {todo: TodoType }) {
             .then(() => setDeleting(false))
             .catch(() => setDeleting(false));
         }}
-        className={`text-[1.3rem] font-bold text-zinc-700 hover:text-zinc-800 focus:text-zinc-800 ml-auto px-2 rounded-md`}
+        className={`text-[1.3rem] font-bold text-zinc-400 hover:text-zinc-500 focus:text-zinc-500 ml-auto px-2 rounded-md`}
         showSpinner={deleting}
       >
         { deleting ? null : "X" }

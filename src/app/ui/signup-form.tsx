@@ -9,7 +9,7 @@ export default function SignupForm() {
   const [state, action, pending] = useActionState(signup, undefined);
 
   return (
-    <form action={action} className="max-w-sm flex flex-col gap-8 p-5 mx-auto">
+    <form action={action} className="w-[22rem] flex flex-col px-5 py-10 gap-8 border-2 border-neutral-900 rounded-xl">
       <Input
         label={"Username"}
         name="username"
@@ -52,7 +52,7 @@ export default function SignupForm() {
         className={`text-xl mx-auto px-10 py-2 rounded-xl ${pending ? "bg-lime-700" : "bg-lime-600 hover:bg-lime-700 focus:bg-lime-700"}`}
         showSpinner={pending}
       >
-        { pending ? "Signing in..." : "Sign in" }
+        { pending ? "Signing up..." : "Sign up" }
       </Button>
       { state?.errors?.server && <p className="text-center text-red-500">{state.errors.server}</p> }
     </form>

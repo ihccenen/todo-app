@@ -9,12 +9,12 @@ export default function LoginForm() {
   const [state, action, pending] = useActionState(login, undefined);
 
   return (
-    <form action={action} className="max-w-sm flex flex-col gap-8 p-5 mx-auto">
+    <form action={action} className="w-[22rem] flex flex-col px-5 py-10 gap-8 border-2 border-neutral-900 rounded-xl">
       <Input
         label={"Username"}
         name="username"
         id="username"
-        pattern="*"
+        pattern=".*"
         defaultValue={state?.formFields?.username}
         required={true}
       />
@@ -23,7 +23,7 @@ export default function LoginForm() {
         type="password"
         name="password"
         id="password"
-        pattern="*"
+        pattern=".*"
         defaultValue={state?.formFields?.password}
         required={true}
       />
