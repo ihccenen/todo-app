@@ -48,6 +48,9 @@ const TodoSchema = z.object({
     .trim(),
   status: z.enum(["completed", "pending"]),
   createdAt: z.date(),
+  completedAt: z
+    .date()
+    .optional(),
 });
 
 export const Todo = TodoSchema.omit({ id: true, status: true, createdAt: true });

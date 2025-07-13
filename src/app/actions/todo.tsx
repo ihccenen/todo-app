@@ -141,7 +141,8 @@ export async function updateTodoStatus({ id }: Todo): Promise<void> {
         userId: session.userId,
       },
       data: {
-        status: todo.status === "completed" ? "pending" : "completed",
+        status: todo.status === "pending" ? "completed" : "pending",
+        completedAt: todo.status === "pending" ? new Date() : null,
       },
     });
 
