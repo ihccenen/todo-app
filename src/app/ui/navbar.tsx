@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import { useState } from "react";
 import Button from "./button";
 import { logout } from "../actions/auth";
 
