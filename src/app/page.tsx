@@ -13,8 +13,8 @@ export default async function Home() {
         ? <div className="grid gap-5 pb-5">
             <Navbar username={session.username} />
             <div className="container grid gap-2 p-2 mx-auto">
-              <Todos />
               <TodoForm />
+              <Todos />
             </div>
           </div>
         : <div className="h-full text-3xl text-blue-500 flex justify-center items-center gap-5 p-5">

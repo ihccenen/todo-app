@@ -10,7 +10,7 @@ export default function Todo({ todo }: {todo: TodoType }) {
   const [deleting, setDeleting] = useState(false);
 
   return (
-    <div className={`text-2xl max-sm:text-xl flex items-center gap-2 p-3 rounded-md ${todo.status === "pending" ? "bg-indigo-900" : "bg-indigo-950"}`}>
+    <div className={`text-2xl max-sm:text-xl flex items-center gap-2 p-3 rounded-md ${todo.status === "pending" ? "bg-indigo-900" : "transtion-colors duration-3000 bg-indigo-950"}`}>
       <Button
         type="button"
         disabled={updatingStatus}
