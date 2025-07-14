@@ -1,10 +1,10 @@
 type ButtonProps = {
-  type: "button" | "submit" | "reset" | undefined,
-  disabled?: boolean,
-  className?: string,
-  onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void,
-  isPending?: boolean,
-  children: React.ReactNode,
+  type: "button" | "submit" | "reset" | undefined;
+  disabled?: boolean;
+  className?: string;
+  onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void;
+  isPending?: boolean;
+  children: React.ReactNode;
 };
 
 export default function Button({ type, disabled = false, className = "", onClick = undefined, isPending = false, children }: ButtonProps) {

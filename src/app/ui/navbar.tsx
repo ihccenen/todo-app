@@ -5,7 +5,7 @@ import Button from "./button";
 import { logout } from "../actions/auth";
 
 type NavbarProps = {
-  username: string,
+  username: string;
 };
 
 export default function Navbar({ username }: NavbarProps) {

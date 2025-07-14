@@ -1,13 +1,13 @@
 type InputProps = {
-  label?: string,
-  type?: string,
-  id: string,
-  name: string,
-  pattern: string,
-  defaultValue?: string,
-  required: boolean,
-  children?: React.ReactNode,
-  className?: string,
+  label?: string;
+  type?: string;
+  id: string;
+  name: string;
+  pattern: string;
+  defaultValue?: string;
+  required: boolean;
+  children?: React.ReactNode;
+  className?: string;
 };
 
 export default function Input({ label = "", type = "text", id, name, pattern, defaultValue = "", required, className = "", children = null }: InputProps) {
