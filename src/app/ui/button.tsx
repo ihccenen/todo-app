@@ -3,19 +3,19 @@ type ButtonProps = {
   disabled?: boolean,
   className?: string,
   onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void,
-  showSpinner?: boolean,
+  isPending?: boolean,
   children: React.ReactNode,
 };
 
-export default function Button({ type, disabled = false, className = "", onClick = undefined, showSpinner = false, children }: ButtonProps) {
+export default function Button({ type, disabled = false, className = "", onClick = undefined, isPending = false, children }: ButtonProps) {
   return (
     <button
       type={type || "button"}
-      disabled={disabled || showSpinner}
+      disabled={disabled || isPending}
       onClick={onClick}
-      className={`flex items-center gap-2 ${showSpinner ? "hover:cursor-wait" : disabled ? "hover:cursor-not-allowed" : "hover:cursor-pointer"} ${className}`}
+      className={`flex items-center gap-2 ${isPending ? "hover:cursor-wait" : disabled ? "hover:cursor-not-allowed" : "hover:cursor-pointer"} ${className}`}
     >
-      { showSpinner &&
+      { isPending &&
         <svg className="size-5 animate-spin text-white"
           xmlns="http://www.w3.org/2000/svg"
           fill="none"

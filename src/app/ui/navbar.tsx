@@ -23,7 +23,7 @@ export default function Navbar({ username }: NavbarProps) {
             .catch(() => setPending(false));
         }}
         className={`text-xl max-sm:text-sm p-2 border-1 border-red-500 ${pending ? "border-red-600 hover:cursor-not-allowed" : "hover:border-red-600 hover:cursor-pointer"}`}
-        showSpinner={pending}
+        isPending={pending}
       >
         { pending ? "Logging out..." : "Log out" }
       </Button>

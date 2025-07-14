@@ -50,7 +50,7 @@ export default function SignupForm() {
         type="submit"
         disabled={pending}
         className={`text-xl mx-auto px-10 py-2 rounded-xl ${pending ? "bg-lime-700" : "bg-lime-600 hover:bg-lime-700 focus:bg-lime-700"}`}
-        showSpinner={pending}
+        isPending={pending}
       >
         { pending ? "Signing up..." : "Sign up" }
       </Button>

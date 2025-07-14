@@ -5,7 +5,7 @@ import { deleteTodo, updateTodoStatus } from "../actions/todo";
 import { Todo as TodoType } from "../lib/definitions";
 import { useTransition } from "react";
 
-export default function Todo({ todo }: {todo: TodoType }) {
+export default function Todo({ todo }: { todo: TodoType }) {
   const [updateIsPending, startUpdateTransition] = useTransition();
   const [deleteIsPending, startDeleteTransition] = useTransition();
 
@@ -16,7 +16,7 @@ export default function Todo({ todo }: {todo: TodoType }) {
         disabled={updateIsPending}
         onClick={() => startUpdateTransition(async () => await updateTodoStatus(todo))}
         className={`${todo.status === "completed" ? "text-lime-500 hover:text-lime-600 focus:text-lime-600" : "text-amber-500 hover:text-amber-600 focus:text-amber-600"} w-8 h-8 justify-center shrink-0 rounded-md`}
-        showSpinner={updateIsPending}
+        isPending={updateIsPending}
       >
         { updateIsPending ? null : todo.status === "completed" ? "✔" : "O" }
       </Button>
@@ -30,7 +30,7 @@ export default function Todo({ todo }: {todo: TodoType }) {
         disabled={deleteIsPending}
         onClick={() => startDeleteTransition(async () => await deleteTodo(todo))}
         className={`text-[1.3rem] font-bold text-zinc-400 hover:text-zinc-500 focus:text-zinc-500 ml-auto px-2 rounded-md`}
-        showSpinner={deleteIsPending}
+        isPending={deleteIsPending}
       >
         { deleteIsPending ? null : "X" }
       </Button>

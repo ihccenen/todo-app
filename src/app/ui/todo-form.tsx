@@ -23,7 +23,7 @@ export default function TodoForm() {
       <Button
         type="submit"
         disabled={pending}
-        showSpinner={pending}
+        isPending={pending}
         className={`px-4 py-2 mx-auto rounded-xl ${pending ? "bg-lime-700" : "bg-lime-600 hover:bg-lime-700 focus:bg-lime-700"}`}
       >
         { pending ? "Adding Todo..." : "Add Todo" }
