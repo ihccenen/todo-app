@@ -17,6 +17,7 @@ export default function SignupForm() {
         pattern=".{2,}"
         defaultValue={state?.formFields?.username}
         required={true}
+        disabled={pending}
       >
         <span className="text-sm text-red-500 hidden peer-[:invalid&:not(:placeholder-shown)]:block">
           {state?.errors?.username || "Username must be at least 2 characters long"}
@@ -30,6 +31,7 @@ export default function SignupForm() {
         pattern="(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d]{4,}$"
         defaultValue={state?.formFields?.password}
         required={true}
+        disabled={pending}
       >
         <div className={`text-sm text-red-500 ${!state?.errors?.password && "hidden peer-[:invalid&:not(:placeholder-shown)]:block"}`}>
           <p>Password requirements:</p>

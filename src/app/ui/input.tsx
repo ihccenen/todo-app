@@ -5,12 +5,13 @@ type InputProps = {
   name: string;
   pattern: string;
   defaultValue?: string;
-  required: boolean;
+  required?: boolean;
+  disabled?: boolean;
   children?: React.ReactNode;
   className?: string;
 };
 
-export default function Input({ label = "", type = "text", id, name, pattern, defaultValue = "", required, className = "", children = null }: InputProps) {
+export default function Input({ label = "", type = "text", id, name, pattern, defaultValue = "", required = false, disabled = false, className = "", children = null }: InputProps) {
   return (
     <div className={`relative ${className}`}>
       <input
@@ -20,6 +21,7 @@ export default function Input({ label = "", type = "text", id, name, pattern, de
         pattern={pattern}
         defaultValue={defaultValue}
         required={required}
+        disabled={disabled}
         className="block px-2.5 pb-2.5 pt-4 w-full bg-transparent rounded-lg border-1 appearance-none text-white border-blue-500 invalid:[&:not(:placeholder-shown):not(:focus)]:border-red-500 focus:outline-none focus:ring-0 peer"
         placeholder=" "
       />

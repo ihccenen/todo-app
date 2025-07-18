@@ -16,6 +16,7 @@ export default function TodoForm() {
         pattern=".*"
         defaultValue={state?.formFields?.title || ""}
         required={true}
+        disabled={pending}
         className="[&>input]:bg-zinc-900"
       >
         { state?.errors?.title && <span className="text-md text-red-500">{state?.errors?.title}</span> }

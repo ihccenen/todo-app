@@ -17,6 +17,7 @@ export default function LoginForm() {
         pattern=".*"
         defaultValue={state?.formFields?.username}
         required={true}
+        disabled={pending}
       />
       <Input
         label={"Password"}
@@ -26,6 +27,7 @@ export default function LoginForm() {
         pattern=".*"
         defaultValue={state?.formFields?.password}
         required={true}
+        disabled={pending}
       />
       <Button
         type="submit"
