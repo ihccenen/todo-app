@@ -10,7 +10,7 @@ export default function Todo({ todo }: { todo: TodoType }) {
   const [deleteIsPending, startDeleteTransition] = useTransition();
 
   return (
-    <div className={`text-2xl max-sm:text-xl flex items-center gap-2 p-3 rounded-md ${todo.status === "pending" ? "bg-indigo-900" : "transtion-colors duration-3000 bg-indigo-950"}`}>
+    <div className={`text-2xl flex items-baseline gap-2 p-3 rounded-md ${todo.status === "pending" ? "bg-indigo-600" : "bg-indigo-800"}`}>
       <Button
         type="button"
         disabled={updateIsPending}
@@ -20,16 +20,16 @@ export default function Todo({ todo }: { todo: TodoType }) {
       >
         { updateIsPending ? null : todo.status === "completed" ? "✔" : "O" }
       </Button>
-      <div className="relative z-1">
-        <p className={`break-all inline bg-[length:0px_0.1em] bg-[0px_center] ${todo.status === "completed" && "bg-gradient-to-l from-black to-black bg-no-repeat transition-all duration-1000 ease-in bg-[length:100%_0.1em]"}`}>
-          <span className="relative -z-1">{todo.title}</span>
+      <div>
+        <p className={`break-all ${todo.status === "completed" ? "decoration-2 decoration-black line-through" : ""}`}>
+          {todo.title}
         </p>
       </div>
       <Button
         type="button"
         disabled={deleteIsPending}
         onClick={() => startDeleteTransition(async () => await deleteTodo(todo))}
-        className={`text-[1.3rem] font-bold text-zinc-400 hover:text-zinc-500 focus:text-zinc-500 ml-auto px-2 rounded-md`}
+        className={"text-zinc-900 hover:text-rose-400 focus:text-rose-400 ml-auto px-2 rounded-md"}
         isPending={deleteIsPending}
       >
         { deleteIsPending ? null : "X" }

@@ -15,7 +15,7 @@ export default async function Home() {
         ? <div className="h-full flex flex-col gap-5 pb-5">
             <Navbar username={session.username} />
             <Suspense fallback={<Spinner className="size-15 self-center grow" />}>
-              <div className="container grid gap-2 p-2 mx-auto">
+              <div className="w-full max-w-4xl grid gap-10 p-2 mx-auto">
                 <TodoForm />
                 <Todos />
               </div>

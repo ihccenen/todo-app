@@ -9,7 +9,7 @@ export default function TodoForm() {
   const [state, action, pending] = useActionState(createTodo, undefined);
 
   return (
-    <form action={action} className="md:min-w-md max-md:max-w-md grid gap-6 px-10 py-6  mx-auto border-1 border-neutral-800 rounded-xl">
+    <form action={action} className="w-full max-w-md grid gap-6 px-10 py-6 mx-auto border-1 border-neutral-800 rounded-xl">
       <Input
         name="title"
         id="title"
