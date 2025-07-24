@@ -20,8 +20,11 @@ export default function SignupForm() {
         disabled={pending}
       >
         <span className="text-sm text-red-500 hidden peer-[:invalid&:not(:placeholder-shown)]:block">
-          {state?.errors?.username || "Username must be at least 2 characters long"}
+          {"Username must be at least 2 characters long"}
         </span>
+        { state?.errors?.username?.join(", ") && <span className="text-sm text-red-500 hidden peer-[&:not(:placeholder-shown)]:block">
+                                                   {state.errors.username.join(", ")}
+                                                 </span> }
       </Input>
       <Input
         label={"Password"}
