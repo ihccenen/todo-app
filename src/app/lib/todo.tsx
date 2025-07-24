@@ -20,6 +20,8 @@ export async function getTodos(): Promise<Todo[] | string> {
         id: true,
         title: true,
         status: true,
+        createdAt: true,
+        completedAt: true,
       },
       orderBy: [
         { completedAt: { sort: "desc", nulls: "first" } },
