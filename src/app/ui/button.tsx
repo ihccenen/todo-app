@@ -17,6 +17,7 @@ export default function Button({ type, disabled = false, className = "", onClick
     <button
       type={type || "button"}
       disabled={disabled || isPending}
+      onClick={onClick}
       onPointerUp={onPointerUp}
       onPointerDown={onPointerDown}
       onKeyUp={onKeyUp}

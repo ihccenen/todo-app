@@ -16,7 +16,7 @@ export default function Navbar({ username }: NavbarProps) {
       <h1 className="text-2xl max-w-[15ch] overflow-hidden text-ellipsis font-semibold">{username}</h1>
       <Button
         type="button"
-        onClick={() => startTransition(async () => logout())}
+        onPointerDown={() => startTransition(async () => logout())}
         className={`text-xl p-2 border-1 border-red-500 ${isPending ? "border-red-600 hover:cursor-not-allowed" : "hover:border-red-600 hover:cursor-pointer"}`}
         isPending={isPending}
       >
